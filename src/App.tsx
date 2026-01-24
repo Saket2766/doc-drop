@@ -1,7 +1,11 @@
-import { ComponentExample } from "@/components/component-example";
+import { Navbar } from "./components/navbar";
 
 export function App() {
-return <ComponentExample />;
+  return (
+    <>
+      <Navbar />
+    </>
+  );
 }
 
 export default App;
