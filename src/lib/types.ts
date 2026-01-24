@@ -10,7 +10,7 @@ export type doc = {
     content: string,
     type: 'pdf'|'docx'|'pptx',
     uploadedAt: Date,
-    comments: string[],
+    comments: comment[] | null,
     creator: string,
     editorAccessUsers: string[],
 }
