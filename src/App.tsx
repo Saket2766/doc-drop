@@ -1,16 +1,8 @@
-import { Navbar } from "./components/navbar";
-import { UploadView } from "./components/uploadView";
-
+import { Navigate } from "react-router";
 
 export function App() {
   return (
-    <>
-      <Navbar />
-      <div className="w-1/5 mx-auto">
-        <UploadView />
-      </div>
-      
-    </>
+      <Navigate to="/dashboard" />
   );
 }
 
