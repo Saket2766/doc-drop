@@ -127,3 +127,40 @@
     @apply font-sans;
     }
 }
+
+/* PDF Viewer Styles */
+.react-pdf__Page {
+  position: relative;
+}
+
+.react-pdf__Page__canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.react-pdf__Page__textContent {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.2;
+  line-height: 1;
+  user-select: text;
+  pointer-events: auto;
+}
+
+.react-pdf__Page__textContent span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  transform-origin: 0% 0%;
+}
+
+.react-pdf__Page__annotations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.react-pdf__Page__annotations a {
+  pointer-events: auto;
+}
