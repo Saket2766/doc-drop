@@ -1,8 +1,12 @@
-import { Navigate } from "react-router";
+import { Outlet } from "react-router";
+import { Navbar } from "./components/navbar";
 
 export function App() {
   return (
-      <Navigate to="/dashboard" />
+    <>
+      <Navbar />
+      <Outlet/>   
+    </>
   );
 }
 

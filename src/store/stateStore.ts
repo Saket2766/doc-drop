@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 
 export type comment = {
@@ -26,10 +27,18 @@ export type project = {
     docs: Map<number, doc>,
 }
 
+export type pathItem = {
+    label: string;
+    isLink: boolean;
+    href?: string;
+}
+
 interface StateStore {
     projects: Map<number, project>,
     currentProject: project | null,
     currentDoc: doc | null,
+    currentPath: pathItem[] | null,
+    setCurrentPath: (path: pathItem[]) => void,
     addProject: (project: project) => void,
     setCurrentProject: (project: project) => void,
     setCurrentDoc: (doc: doc) => void,
@@ -39,6 +48,10 @@ export const useStateStore = create<StateStore>((set) => ({
     projects: new Map(),
     currentProject: null,
     currentDoc: null,
+    currentPath: [{label: "Projects", isLink: false}],
+    setCurrentPath: (path: pathItem[]) => {
+        set(() => ({ currentPath: path }));
+    },
     addProject: (project: project) => {
         set((state) => ({ projects: state.projects.set(project.id, project) }));
     },
