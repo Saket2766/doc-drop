@@ -67,7 +67,7 @@ export const ItemsView = () => {
       destination={{ url: "https://your-upload-endpoint.com" }}
       autoUpload={false}
     >
-      <UploadDropZone className="w-full h-full min-h-[80vh] p-4 flex flex-col gap-6 bg-white border-t border-gray-200 ">
+      <UploadDropZone className="w-full h-full min-h-[80vh] p-4 flex flex-col gap-6">
         <ItemsList />
         <div className="w-full py-4 flex items-center justify-end">
           <UploadButton className="px-4 py-2 w-fit bg-blue-700 hover:bg-blue-900 text-white rounded-xl font-medium transition-colors cursor-pointer">

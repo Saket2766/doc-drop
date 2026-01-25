@@ -8,7 +8,7 @@ export const PathBar = () => {
         <Breadcrumb>
             {currentPath?.map((item,idx) => (
                 <>
-                    <BreadcrumbItem key={item.label}>
+                    <BreadcrumbItem key={idx}>
                         {item.isLink ? <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink> : <BreadcrumbPage>{item.label}</BreadcrumbPage>}
                     </BreadcrumbItem>
                     {idx < currentPath.length - 1 && <BreadcrumbSeparator />}

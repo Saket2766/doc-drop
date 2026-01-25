@@ -52,8 +52,15 @@ export const useStateStore = create<StateStore>((set) => ({
     setCurrentPath: (path: pathItem[]) => {
         set(() => ({ currentPath: path }));
     },
+    addToCurrentPath: (item: pathItem) => {
+        set((state) => ({ currentPath: [...state.currentPath!, item] }));
+    },
     addProject: (project: project) => {
-        set((state) => ({ projects: state.projects.set(project.id, project) }));
+        set((state) => {
+            const newProjects = new Map(state.projects);
+            newProjects.set(project.id, project);
+            return { projects: newProjects };
+        });
     },
     setCurrentProject: (project: project) => {
         set(() => ({ currentProject: project }));
