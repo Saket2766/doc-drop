@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  conversion-worker:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.worker
+    env_file:
+      - .env
+    environment:
+      REDIS_ADDR: redis:6379
+      REDIS_STREAM: docdrop:conversion:stream
+      REDIS_GROUP: docdrop:conversion:workers
+      REDIS_CONSUMER: conversion-worker
+      CONVERSION_WORKERS: 2
+      CONVERSION_MAX_RETRIES: 3
+      CONVERSION_TIMEOUT_SECONDS: 180
+    depends_on:
+      - redis

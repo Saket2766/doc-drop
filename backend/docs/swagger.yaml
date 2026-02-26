@@ -1,0 +1,844 @@
+basePath: /api/
+definitions:
+  models.Comment:
+    properties:
+      author:
+        type: string
+      createdAt:
+        type: string
+      documentId:
+        type: integer
+      id:
+        type: string
+      message:
+        type: string
+      page:
+        type: integer
+      parentCommentId:
+        type: string
+      replytoUserId:
+        type: string
+      resolved:
+        type: boolean
+      version:
+        type: integer
+    type: object
+  models.ConversionStatus:
+    enum:
+    - none
+    - pending
+    - processing
+    - succeeded
+    - failed
+    type: string
+    x-enum-varnames:
+    - ConversionStatusNone
+    - ConversionStatusPending
+    - ConversionStatusProcessing
+    - ConversionStatusSucceeded
+    - ConversionStatusFailed
+  models.DocTag:
+    enum:
+    - red
+    - green
+    - yellow
+    type: string
+    x-enum-varnames:
+    - DocTagRed
+    - DocTagGreen
+    - DocTagYellow
+  models.CreateDocumentRequest:
+    properties:
+      creator:
+        type: string
+      currentPage:
+        type: integer
+      currentVersionNumber:
+        type: integer
+      documentType:
+        type: string
+      editorAccessUsers:
+        items:
+          type: string
+        type: array
+      fileKey:
+        type: string
+      fileSize:
+        type: integer
+      isFavorite:
+        type: boolean
+      mimeType:
+        type: string
+      projectId:
+        type: integer
+      tag:
+        $ref: '#/definitions/models.DocTag'
+      title:
+        type: string
+      totalPages:
+        type: integer
+      uploadedAt:
+        type: string
+      viewerAccessUsers:
+        items:
+          type: string
+        type: array
+    type: object
+  models.Document:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+      creator:
+        type: string
+      currentPage:
+        type: integer
+      currentVersionNumber:
+        type: integer
+      documentType:
+        type: string
+      editorAccessUsers:
+        items:
+          type: string
+        type: array
+      fileSize:
+        type: integer
+      fileUrl:
+        type: string
+      id:
+        type: integer
+      isFavorite:
+        type: boolean
+      mimeType:
+        type: string
+      projectId:
+        type: integer
+      tag:
+        $ref: '#/definitions/models.DocTag'
+      title:
+        type: string
+      totalPages:
+        type: integer
+      uploadedAt:
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/models.DocumentVersion'
+        type: array
+      viewerAccessUsers:
+        items:
+          type: string
+        type: array
+    type: object
+  models.DocumentVersion:
+    properties:
+      conversionAttempts:
+        type: integer
+      conversionError:
+        type: string
+      conversionStatus:
+        $ref: '#/definitions/models.ConversionStatus'
+      convertedAt:
+        type: string
+      documentId:
+        type: integer
+      fileSize:
+        type: integer
+      fileUrl:
+        type: string
+      id:
+        type: string
+      pdfUrl:
+        type: string
+      uploadedAt:
+        type: string
+      uploadedBy:
+        type: string
+      versionNumber:
+        type: integer
+    type: object
+  models.NewVersionRequest:
+    properties:
+      contentType:
+        type: string
+      documentId:
+        type: integer
+      fileName:
+        type: string
+      fileSize:
+        type: integer
+    required:
+    - contentType
+    - documentId
+    - fileName
+    type: object
+  models.Project:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      docs:
+        description: Relations
+        items:
+          $ref: '#/definitions/models.Document'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        description: owner of the project
+        type: integer
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      projects:
+        description: Relations
+        items:
+          $ref: '#/definitions/models.Project'
+        type: array
+      username:
+        type: string
+    type: object
+  services.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  services.DeleteDocumentResult:
+    properties:
+      documentId:
+        type: integer
+      s3KeysDeleted:
+        type: integer
+      versionsDeleted:
+        type: integer
+    type: object
+  services.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  services.LoginResponse:
+    properties:
+      email:
+        type: string
+      token:
+        type: string
+      userId:
+        type: integer
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a backend server for DocDrop.
+  title: DocDrop Backend API
+  version: "1.0"
+paths:
+  /comments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment
+      parameters:
+      - description: Comment payload
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Comment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a comment
+      tags:
+      - comments
+  /comments/{id}:
+    get:
+      description: Returns all comments for a document
+      parameters:
+      - description: Document ID
+        in: path
+        name: documentId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Comment'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get comments by document ID
+      tags:
+      - comments
+  /documents:
+    post:
+      consumes:
+      - application/json
+      description: Create a new document
+      parameters:
+      - description: Document payload
+        in: body
+        name: document
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateDocumentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Document'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a document
+      tags:
+      - documents
+  /documents/{id}:
+    delete:
+      description: Soft-deletes the document in Postgres and best-effort deletes all
+        version files from S3
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.DeleteDocumentResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a document
+      tags:
+      - documents
+    get:
+      description: Returns a single document by its ID
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Document'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get document by ID
+      tags:
+      - documents
+  /documents/{id}/download-url:
+    get:
+      description: Returns a fresh presigned download URL for a document (regenerated
+        if expired)
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              downloadUrl:
+                type: string
+              expiresAt:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get document download URL
+      tags:
+      - documents
+  /documents/{id}/versions/{versionNumber}/convert:
+    post:
+      description: Enqueues a PPTX to PDF conversion job for a specific document version
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Version number
+        in: path
+        name: versionNumber
+        required: true
+        type: string
+      - description: Force re-conversion if previously failed
+        in: query
+        name: force
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Enqueue conversion for a document version
+      tags:
+      - documents
+  /documents/new-version:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new version record, updates the document, and returns
+        a presigned S3 URL for uploading the new version file
+      parameters:
+      - description: Document ID, file name, content type, and optional file size
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              uploadUrl:
+                type: string
+              versionNumber:
+                type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload new version of a document
+      tags:
+      - documents
+  /documents/upload:
+    post:
+      consumes:
+      - application/json
+      - ' multipart/form-data'
+      description: Accepts multipart/form-data to upload a file to S3 and create metadata,
+        or JSON to return a presigned upload URL
+      parameters:
+      - description: File to upload (multipart only)
+        in: formData
+        name: file
+        type: file
+      - description: Document title (multipart only)
+        in: formData
+        name: title
+        type: string
+      - description: Mime type (multipart only)
+        in: formData
+        name: mimeType
+        type: string
+      - description: Document type (multipart only)
+        in: formData
+        name: documentType
+        type: string
+      - description: Project ID (multipart only)
+        in: formData
+        name: projectId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a document or get a presigned upload URL
+      tags:
+      - documents
+  /documents/versions/{id}:
+    get:
+      description: Returns all version records for a document by its ID, ordered by
+        version number
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DocumentVersion'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all versions of a document
+      tags:
+      - documents
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with email and password, returns a JWT token
+      parameters:
+      - description: email and password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/services.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /projects:
+    get:
+      description: Returns projects associated with the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Project'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List projects for current user
+      tags:
+      - projects
+    post:
+      consumes:
+      - application/json
+      description: Create a new project
+      parameters:
+      - description: Project payload
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/models.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Project'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a project
+      tags:
+      - projects
+  /projects/{id}:
+    delete:
+      description: Deletes a project by ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              Message:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a project
+      tags:
+      - projects
+    get:
+      description: Returns a single project by its ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Project'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get project by ID
+      tags:
+      - projects
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User payload (username, email, password)
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Returns a single user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by ID
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Partially update a user by ID (supports optional fields)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update (username, email, password, etc.)
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user by ID
+      tags:
+      - users
+swagger: "2.0"

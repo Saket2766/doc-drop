@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1
+ARG GO_VERSION=1.24.0
+
+FROM golang:${GO_VERSION}-bookworm AS build
+WORKDIR /app
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+COPY backend ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/conversion-worker ./cmd/conversion-worker
+
+FROM debian:bookworm-slim
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libreoffice fonts-dejavu-core ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+COPY --from=build /bin/conversion-worker /usr/local/bin/conversion-worker
+ENV LIBREOFFICE_BIN=soffice
+ENTRYPOINT ["conversion-worker"]
